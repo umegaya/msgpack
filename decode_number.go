@@ -5,7 +5,7 @@ import (
 	"math"
 	"reflect"
 
-	"gopkg.in/vmihailenco/msgpack.v2/codes"
+	"github.com/umegaya/msgpack/codes"
 )
 
 func (d *Decoder) skipN(n int) error {
@@ -57,14 +57,8 @@ func (d *Decoder) uint64() (uint64, error) {
 	return n, nil
 }
 
-func (d *Decoder) DecodeUint64() (uint64, error) {
-	c, err := d.r.ReadByte()
-	if err != nil {
-		return 0, err
-	}
-	return d.uint(c)
-}
 
+//variable length reader of uint
 func (d *Decoder) uint(c byte) (uint64, error) {
 	if c == codes.Nil {
 		return 0, nil
@@ -97,23 +91,17 @@ func (d *Decoder) uint(c byte) (uint64, error) {
 	return 0, fmt.Errorf("msgpack: invalid code %x decoding uint64", c)
 }
 
-func (d *Decoder) uint64Value(value reflect.Value) error {
-	v, err := d.DecodeUint64()
-	if err != nil {
-		return err
-	}
-	value.SetUint(v)
-	return nil
-}
-
-func (d *Decoder) DecodeInt64() (int64, error) {
+func (d *Decoder) DecodeUint() (uint, error) {
 	c, err := d.r.ReadByte()
 	if err != nil {
 		return 0, err
 	}
-	return d.int(c)
+	n, err2 := d.uint(c)
+	return uint(n), err2
 }
 
+
+//variable length reader of int
 func (d *Decoder) int(c byte) (int64, error) {
 	if c == codes.Nil {
 		return 0, nil
@@ -147,15 +135,17 @@ func (d *Decoder) int(c byte) (int64, error) {
 	return 0, fmt.Errorf("msgpack: invalid code %x decoding int64", c)
 }
 
-func (d *Decoder) int64Value(v reflect.Value) error {
-	n, err := d.DecodeInt64()
+func (d *Decoder) DecodeInt() (int, error) {
+	c, err := d.r.ReadByte()
 	if err != nil {
-		return err
+		return 0, err
 	}
-	v.SetInt(n)
-	return nil
+	n, err2 := d.int(c)
+	return int(n), err2
 }
 
+
+//float32
 func (d *Decoder) DecodeFloat32() (float32, error) {
 	c, err := d.r.ReadByte()
 	if err != nil {
@@ -184,6 +174,7 @@ func (d *Decoder) float32Value(value reflect.Value) error {
 	return nil
 }
 
+//float64
 func (d *Decoder) DecodeFloat64() (float64, error) {
 	c, err := d.r.ReadByte()
 	if err != nil {
@@ -216,42 +207,170 @@ func (d *Decoder) float64Value(value reflect.Value) error {
 	return nil
 }
 
-func (d *Decoder) DecodeUint() (uint, error) {
-	n, err := d.DecodeUint64()
-	return uint(n), err
-}
-
+//uint8
 func (d *Decoder) DecodeUint8() (uint8, error) {
-	n, err := d.DecodeUint64()
-	return uint8(n), err
+	c, err := d.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	if codes.IsFixedNum(c) {
+		return uint8(c), nil
+	}
+	return d.uint8()
+}
+func (d *Decoder) uint8Value(value reflect.Value) error {
+	v, err := d.DecodeUint8()
+	if err != nil {
+		return err
+	}
+	value.SetUint(uint64(v))
+	return nil
 }
 
+//uint16
 func (d *Decoder) DecodeUint16() (uint16, error) {
-	n, err := d.DecodeUint64()
-	return uint16(n), err
+	_, err := d.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	return d.uint16()
+}
+func (d *Decoder) uint16Value(value reflect.Value) error {
+	v, err := d.DecodeUint16()
+	if err != nil {
+		return err
+	}
+	value.SetUint(uint64(v))
+	return nil
 }
 
+//uint32
 func (d *Decoder) DecodeUint32() (uint32, error) {
-	n, err := d.DecodeUint64()
-	return uint32(n), err
+	_, err := d.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	return d.uint32()
+}
+func (d *Decoder) uint32Value(value reflect.Value) error {
+	v, err := d.DecodeUint32()
+	if err != nil {
+		return err
+	}
+	value.SetUint(uint64(v))
+	return nil
 }
 
-func (d *Decoder) DecodeInt() (int, error) {
-	n, err := d.DecodeInt64()
-	return int(n), err
+//uint64
+func (d *Decoder) DecodeUint64() (uint64, error) {
+	_, err := d.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	return d.uint64()
 }
 
+func (d *Decoder) uint64Value(value reflect.Value) error {
+	v, err := d.DecodeUint64()
+	if err != nil {
+		return err
+	}
+	value.SetUint(v)
+	return nil
+}
+
+//uint
+func (d *Decoder) uintValue(value reflect.Value) error {
+	v, err := d.DecodeUint()
+	if err != nil {
+		return err
+	}
+	value.SetUint(uint64(v))
+	return nil
+}
+
+//int8
 func (d *Decoder) DecodeInt8() (int8, error) {
-	n, err := d.DecodeInt64()
-	return int8(n), err
+	c, err := d.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	if codes.IsFixedNum(c) {
+		return int8(c), nil
+	}
+	n, err2 := d.uint8()
+	return int8(n), err2
+}
+func (d *Decoder) int8Value(value reflect.Value) error {
+	v, err := d.DecodeInt8()
+	if err != nil {
+		return err
+	}
+	value.SetInt(int64(v))
+	return nil
 }
 
+//uint16
 func (d *Decoder) DecodeInt16() (int16, error) {
-	n, err := d.DecodeInt64()
-	return int16(n), err
+	_, err := d.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	n, err2 := d.uint64()
+	return int16(n), err2
+}
+func (d *Decoder) int16Value(value reflect.Value) error {
+	v, err := d.DecodeInt16()
+	if err != nil {
+		return err
+	}
+	value.SetInt(int64(v))
+	return nil
 }
 
+//uint32
 func (d *Decoder) DecodeInt32() (int32, error) {
-	n, err := d.DecodeInt64()
-	return int32(n), err
+	_, err := d.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	n, err2 := d.uint32()
+	return int32(n), err2
+}
+func (d *Decoder) int32Value(value reflect.Value) error {
+	v, err := d.DecodeInt32()
+	if err != nil {
+		return err
+	}
+	value.SetInt(int64(v))
+	return nil
+}
+
+//uint64
+func (d *Decoder) DecodeInt64() (int64, error) {
+	_, err := d.r.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	n, err2 := d.uint64()
+	return int64(n), err2
+}
+
+func (d *Decoder) int64Value(value reflect.Value) error {
+	v, err := d.DecodeInt64()
+	if err != nil {
+		return err
+	}
+	value.SetInt(v)
+	return nil
+}
+
+//uint
+func (d *Decoder) intValue(value reflect.Value) error {
+	v, err := d.DecodeInt()
+	if err != nil {
+		return err
+	}
+	value.SetInt(int64(v))
+	return nil
 }

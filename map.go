@@ -12,9 +12,9 @@ func (e *Encoder) EncodeMapLen(l int) error {
 		return e.w.WriteByte(codes.FixedMapLow | byte(l))
 	}
 	if l < 65536 {
-		return e.write2(codes.Map16, uint64(l))
+		return e.write2(codes.Map16, uint16(l))
 	}
-	return e.write4(codes.Map32, uint64(l))
+	return e.write4(codes.Map32, uint32(l))
 }
 
 func (e *Encoder) encodeMapStringString(m map[string]string) error {

@@ -43,15 +43,15 @@ var (
 func init() {
 	valueEncoders = []encoderFunc{
 		reflect.Bool:          encodeBoolValue,
-		reflect.Int:           encodeInt64Value,
-		reflect.Int8:          encodeInt64Value,
-		reflect.Int16:         encodeInt64Value,
-		reflect.Int32:         encodeInt64Value,
+		reflect.Int:           encodeIntValue,
+		reflect.Int8:          encodeInt8Value,
+		reflect.Int16:         encodeInt16Value,
+		reflect.Int32:         encodeInt32Value,
 		reflect.Int64:         encodeInt64Value,
-		reflect.Uint:          encodeUint64Value,
-		reflect.Uint8:         encodeUint64Value,
-		reflect.Uint16:        encodeUint64Value,
-		reflect.Uint32:        encodeUint64Value,
+		reflect.Uint:          encodeUintValue,
+		reflect.Uint8:         encodeUint8Value,
+		reflect.Uint16:        encodeUint16Value,
+		reflect.Uint32:        encodeUint32Value,
 		reflect.Uint64:        encodeUint64Value,
 		reflect.Float32:       encodeFloat32Value,
 		reflect.Float64:       encodeFloat64Value,
@@ -70,15 +70,15 @@ func init() {
 	}
 	valueDecoders = []decoderFunc{
 		reflect.Bool:          decodeBoolValue,
-		reflect.Int:           decodeInt64Value,
-		reflect.Int8:          decodeInt64Value,
-		reflect.Int16:         decodeInt64Value,
-		reflect.Int32:         decodeInt64Value,
+		reflect.Int:           decodeIntValue,
+		reflect.Int8:          decodeInt8Value,
+		reflect.Int16:         decodeInt16Value,
+		reflect.Int32:         decodeInt32Value,
 		reflect.Int64:         decodeInt64Value,
-		reflect.Uint:          decodeUint64Value,
-		reflect.Uint8:         decodeUint64Value,
-		reflect.Uint16:        decodeUint64Value,
-		reflect.Uint32:        decodeUint64Value,
+		reflect.Uint:          decodeUintValue,
+		reflect.Uint8:         decodeUint8Value,
+		reflect.Uint16:        decodeUint16Value,
+		reflect.Uint32:        decodeUint32Value,
 		reflect.Uint64:        decodeUint64Value,
 		reflect.Float32:       decodeFloat64Value,
 		reflect.Float64:       decodeFloat64Value,
@@ -292,6 +292,16 @@ func decodeByteArrayValue(d *Decoder, v reflect.Value) error {
 
 //------------------------------------------------------------------------------
 
+func encodeIntValue(e *Encoder, v reflect.Value) error {
+	return e.EncodeInt(int(v.Int()))
+}
+
+func decodeIntValue(d *Decoder, v reflect.Value) error {
+	return d.intValue(v)
+}
+
+//------------------------------------------------------------------------------
+
 func encodeInt64Value(e *Encoder, v reflect.Value) error {
 	return e.EncodeInt64(v.Int())
 }
@@ -302,12 +312,82 @@ func decodeInt64Value(d *Decoder, v reflect.Value) error {
 
 //------------------------------------------------------------------------------
 
+func encodeInt32Value(e *Encoder, v reflect.Value) error {
+	return e.EncodeInt32(int32(v.Int()))
+}
+
+func decodeInt32Value(d *Decoder, v reflect.Value) error {
+	return d.int32Value(v)
+}
+
+//------------------------------------------------------------------------------
+
+func encodeInt16Value(e *Encoder, v reflect.Value) error {
+	return e.EncodeInt16(int16(v.Int()))
+}
+
+func decodeInt16Value(d *Decoder, v reflect.Value) error {
+	return d.int16Value(v)
+}
+
+//------------------------------------------------------------------------------
+
+func encodeInt8Value(e *Encoder, v reflect.Value) error {
+	return e.EncodeInt8(int8(v.Int()))
+}
+
+func decodeInt8Value(d *Decoder, v reflect.Value) error {
+	return d.int8Value(v)
+}
+
+//------------------------------------------------------------------------------
+
+func encodeUintValue(e *Encoder, v reflect.Value) error {
+	return e.EncodeUint(uint(v.Uint()))
+}
+
+func decodeUintValue(d *Decoder, v reflect.Value) error {
+	return d.uintValue(v)
+}
+
+//------------------------------------------------------------------------------
+
 func encodeUint64Value(e *Encoder, v reflect.Value) error {
-	return e.EncodeUint64(v.Uint())
+	return e.EncodeUint64(uint64(v.Uint()))
 }
 
 func decodeUint64Value(d *Decoder, v reflect.Value) error {
 	return d.uint64Value(v)
+}
+
+//------------------------------------------------------------------------------
+
+func encodeUint32Value(e *Encoder, v reflect.Value) error {
+	return e.EncodeUint32(uint32(v.Uint()))
+}
+
+func decodeUint32Value(d *Decoder, v reflect.Value) error {
+	return d.uint32Value(v)
+}
+
+//------------------------------------------------------------------------------
+
+func encodeUint16Value(e *Encoder, v reflect.Value) error {
+	return e.EncodeUint16(uint16(v.Uint()))
+}
+
+func decodeUint16Value(d *Decoder, v reflect.Value) error {
+	return d.uint16Value(v)
+}
+
+//------------------------------------------------------------------------------
+
+func encodeUint8Value(e *Encoder, v reflect.Value) error {
+	return e.EncodeUint8(uint8(v.Uint()))
+}
+
+func decodeUint8Value(d *Decoder, v reflect.Value) error {
+	return d.uint8Value(v)
 }
 
 //------------------------------------------------------------------------------
@@ -367,6 +447,7 @@ func encodePtrValue(e *Encoder, v reflect.Value) error {
 
 func decodePtrValue(d *Decoder, v reflect.Value) error {
 	if d.gotNilCode() {
+		d.DecodeNil()
 		v.Set(reflect.New(v.Type()).Elem())
 		return nil
 	}

@@ -223,8 +223,8 @@ func (d *Decoder) interfaceValue(v reflect.Value) error {
 
 // Decodes value into interface. Possible value types are:
 //   - nil,
-//   - int64,
-//   - uint64,
+//   - int64, int32, int16, int8
+//   - uint64, uint32, uint16, uint8
 //   - bool,
 //   - float32 and float64,
 //   - string,
@@ -238,9 +238,9 @@ func (d *Decoder) DecodeInterface() (interface{}, error) {
 
 	if codes.IsFixedNum(c) {
 		if c >= 0 {
-			return d.uint(c)
+			return uint8(c), nil
 		}
-		return d.int(c)
+		return int8(c), nil
 	}
 	if codes.IsFixedMap(c) {
 		d.r.UnreadByte()
@@ -263,10 +263,26 @@ func (d *Decoder) DecodeInterface() (interface{}, error) {
 		return d.float32(c)
 	case codes.Double:
 		return d.float64(c)
-	case codes.Uint8, codes.Uint16, codes.Uint32, codes.Uint64:
-		return d.uint(c)
-	case codes.Int8, codes.Int16, codes.Int32, codes.Int64:
-		return d.int(c)
+	case codes.Uint8:
+		return d.uint8()
+	case codes.Uint16:
+		return d.uint16()
+	case codes.Uint32:
+		return d.uint32()
+	case codes.Uint64:
+		return d.uint64()
+	case codes.Int8:
+		v, err := d.uint8()
+		return int8(v), err
+	case codes.Int16:
+		v, err := d.uint16()
+		return int16(v), err
+	case codes.Int32:
+		v, err := d.uint32()
+		return int32(v), err
+	case codes.Int64:
+		v, err := d.uint64()
+		return int64(v), err
 	case codes.Bin8, codes.Bin16, codes.Bin32:
 		return d.bytes(c)
 	case codes.Str8, codes.Str16, codes.Str32:

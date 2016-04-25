@@ -10,12 +10,12 @@ import (
 
 func (e *Encoder) encodeBytesLen(l int) error {
 	if l < 256 {
-		return e.write1(codes.Bin8, uint64(l))
+		return e.write1(codes.Bin8, uint8(l))
 	}
 	if l < 65536 {
-		return e.write2(codes.Bin16, uint64(l))
+		return e.write2(codes.Bin16, uint16(l))
 	}
-	return e.write4(codes.Bin32, uint64(l))
+	return e.write4(codes.Bin32, uint32(l))
 }
 
 func (e *Encoder) encodeStrLen(l int) error {
@@ -23,12 +23,12 @@ func (e *Encoder) encodeStrLen(l int) error {
 		return e.w.WriteByte(codes.FixedStrLow | uint8(l))
 	}
 	if l < 256 {
-		return e.write1(codes.Str8, uint64(l))
+		return e.write1(codes.Str8, uint8(l))
 	}
 	if l < 65536 {
-		return e.write2(codes.Str16, uint64(l))
+		return e.write2(codes.Str16, uint16(l))
 	}
-	return e.write4(codes.Str32, uint64(l))
+	return e.write4(codes.Str32, uint32(l))
 }
 
 func (e *Encoder) EncodeString(v string) error {
@@ -53,9 +53,9 @@ func (e *Encoder) EncodeArrayLen(l int) error {
 		return e.w.WriteByte(codes.FixedArrayLow | byte(l))
 	}
 	if l < 65536 {
-		return e.write2(codes.Array16, uint64(l))
+		return e.write2(codes.Array16, uint16(l))
 	}
-	return e.write4(codes.Array32, uint64(l))
+	return e.write4(codes.Array32, uint32(l))
 }
 
 // Deprecated. Use EncodeArrayLen instead.
